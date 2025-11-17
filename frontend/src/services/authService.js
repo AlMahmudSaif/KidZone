@@ -13,6 +13,8 @@ export const authService = {
   },
 
   async logout() {
+    // Remove token from storage first
+    localStorage.removeItem('token')
     const response = await API.post('/auth/logout')
     return response.data
   },
@@ -22,8 +24,8 @@ export const authService = {
       const response = await API.get('/auth/me')
       return response.data.user
     } catch (error) {
-      // Return null instead of throwing error to prevent infinite loops
       if (error.response?.status === 401) {
+        localStorage.removeItem('token') // Clear invalid token
         return null
       }
       throw error
@@ -38,5 +40,20 @@ export const authService = {
   async switchToParentMode(pin) {
     const response = await API.post('/parents/switch-to-parent-mode', { pin })
     return response.data
+  },
+
+  // Helper to check if user is logged in
+  isLoggedIn() {
+    return !!localStorage.getItem('token')
+  },
+
+  // Helper to get token
+  getToken() {
+    return localStorage.getItem('token')
+  },
+
+  // Helper to clear token (for logout)
+  clearToken() {
+    localStorage.removeItem('token')
   }
 }
