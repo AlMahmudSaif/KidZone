@@ -110,13 +110,15 @@ export const loginUser = async (req, res) => {
 };
 
 // Logout User
+// Logout User - UPDATE THIS FUNCTION ONLY
 export const logoutUser = (req, res) => {
   try {
     res.cookie("token", "", { 
       expires: new Date(0), 
       httpOnly: true, 
-      sameSite: "strict",
-      secure: process.env.NODE_ENV === "production"
+      sameSite: "none", // CHANGED
+      secure: true,     // CHANGED
+      domain: ".onrender.com" // ADDED
     });
     res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
