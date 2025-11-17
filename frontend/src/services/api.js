@@ -1,21 +1,20 @@
 //services/api.js
-
 import axios from 'axios'
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'https://kidzone-backend.onrender.com/api'
 
 const API = axios.create({
   baseURL: BASE_URL,
-  withCredentials: true,
+  withCredentials: false, // Using headers instead of cookies
 })
 
-// Request interceptor - ADD TOKEN TO HEADERS AS FALLBACK
+// Request interceptor - ADD TOKEN TO HEADERS
 API.interceptors.request.use(
   (config) => {
-    // Try to get token from localStorage as fallback
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      console.log('Token added to request headers');
     }
     return config;
   },
@@ -24,16 +23,24 @@ API.interceptors.request.use(
   }
 )
 
-// Response interceptor - SAVE TOKEN FROM RESPONSE
+// Response interceptor - SAVE TOKEN FROM LOGIN/REGISTER
 API.interceptors.response.use(
   (response) => {
-    // If login/register successful, you might want to save token in localStorage as backup
-    if (response.data.token) {
+    // If login/register successful, save token
+    if (response.data && response.data.token) {
       localStorage.setItem('token', response.data.token);
+      console.log('Token saved to localStorage');
     }
     return response;
   },
   (error) => {
+    // If unauthorized, remove token
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      console.log('Token removed due to 401 error');
+      // Optional: redirect to login page
+      window.location.href = '/login';
+    }
     return Promise.reject(error);
   }
 )
