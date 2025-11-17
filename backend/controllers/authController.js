@@ -49,10 +49,12 @@ export const registerUser = async (req, res) => {
 
     await newUser.save();
 
-    generateToken(newUser._id, res);
+    // Generate token and return in response
+    const token = generateToken(newUser._id);
     
     res.status(201).json({ 
       message: "User registered successfully",
+      token: token,
       user: {
         id: newUser._id,
         username: newUser.username,
@@ -91,10 +93,12 @@ export const loginUser = async (req, res) => {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    generateToken(user._id, res);
+    // Generate token and return in response
+    const token = generateToken(user._id);
     
     res.status(200).json({ 
       message: "Logged in successfully",
+      token: token,
       user: {
         id: user._id,
         username: user.username,
@@ -110,20 +114,8 @@ export const loginUser = async (req, res) => {
 };
 
 // Logout User
-// Logout User - UPDATE THIS FUNCTION ONLY
 export const logoutUser = (req, res) => {
-  try {
-    res.cookie("token", "", { 
-      expires: new Date(0), 
-      httpOnly: true, 
-      sameSite: "none", // CHANGED
-      secure: true,     // CHANGED
-      domain: ".onrender.com" // ADDED
-    });
-    res.status(200).json({ message: "Logged out successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "Error logging out" });
-  }
+  res.status(200).json({ message: "Logged out successfully" });
 };
 
 // Get Current User
