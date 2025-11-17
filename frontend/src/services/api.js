@@ -2,7 +2,6 @@
 
 import axios from 'axios'
 
-// Use environment variable or fallback to production URL
 const BASE_URL = import.meta.env.VITE_API_URL || 'https://kidzone-backend.onrender.com/api'
 
 const API = axios.create({
@@ -10,23 +9,33 @@ const API = axios.create({
   withCredentials: true,
 })
 
-// Request interceptor
+// Request interceptor - ADD TOKEN TO HEADERS AS FALLBACK
 API.interceptors.request.use(
   (config) => {
-    return config
+    // Try to get token from localStorage as fallback
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
   },
   (error) => {
-    return Promise.reject(error)
+    return Promise.reject(error);
   }
 )
 
-// Response interceptor - REMOVE automatic redirect
+// Response interceptor - SAVE TOKEN FROM RESPONSE
 API.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // If login/register successful, you might want to save token in localStorage as backup
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
+    }
+    return response;
+  },
   (error) => {
-    // Don't automatically redirect - let components handle auth errors
-    return Promise.reject(error)
+    return Promise.reject(error);
   }
 )
 
-export default API
+export default API;
