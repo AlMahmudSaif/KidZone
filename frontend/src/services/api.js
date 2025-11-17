@@ -2,8 +2,11 @@
 
 import axios from 'axios'
 
+// Use environment variable or fallback to production URL
+const BASE_URL = import.meta.env.VITE_API_URL || 'https://kidzone-backend.onrender.com/api'
+
 const API = axios.create({
-  baseURL: 'http://localhost:7000/api',
+  baseURL: BASE_URL,
   withCredentials: true,
 })
 
