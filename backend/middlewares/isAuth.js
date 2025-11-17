@@ -4,7 +4,12 @@ import { User } from "../models/userModel.js";
 
 export const isAuth = async (req, res, next) => {
   try {
-    const token = req.cookies.token;
+    let token = req.cookies.token;
+
+    // Fallback: Check Authorization header
+    if (!token && req.headers.authorization) {
+      token = req.headers.authorization.replace("Bearer ", "");
+    }
 
     if (!token) {
       return res.status(401).json({ message: "Access denied. No token provided." });
