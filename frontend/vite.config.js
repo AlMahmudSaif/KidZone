@@ -23,4 +23,10 @@ export default defineConfig({
   server: {
     port: 5173,
   },
+  // ADD THIS FOR RENDER DEPLOYMENT:
+  build: {
+    outDir: 'dist',
+  },
+  // ADD THIS FOR CLIENT-SIDE ROUTING:
+  base: './',
 })
