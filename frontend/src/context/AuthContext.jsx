@@ -16,6 +16,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [isKidMode, setIsKidMode] = useState(false)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     checkAuthStatus()
@@ -23,10 +24,10 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuthStatus = async () => {
     try {
+      setError(null)
       const userData = await authService.getCurrentUser()
       if (userData) {
         setUser(userData)
-        // Sync kid mode with backend user data
         setIsKidMode(userData.mode === 'kid')
       } else {
         setUser(null)
@@ -36,6 +37,7 @@ export const AuthProvider = ({ children }) => {
       console.error('Auth check failed:', error)
       setUser(null)
       setIsKidMode(false)
+      // Don't set error for initial auth check to avoid showing errors on load
     } finally {
       setLoading(false)
     }
@@ -43,57 +45,69 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
+      setError(null)
       const response = await authService.login(email, password)
       setUser(response.user)
-      setIsKidMode(response.user.mode === 'kid') // Sync mode after login
+      setIsKidMode(response.user.mode === 'kid')
       return response
     } catch (error) {
+      setError(error.response?.data?.message || 'Login failed')
       throw error
     }
   }
 
   const register = async (userData) => {
     try {
+      setError(null)
       const response = await authService.register(userData)
       setUser(response.user)
-      setIsKidMode(response.user.mode === 'kid') // Sync mode after register
+      setIsKidMode(response.user.mode === 'kid')
       return response
     } catch (error) {
+      setError(error.response?.data?.message || 'Registration failed')
       throw error
     }
   }
 
   const logout = async () => {
     try {
+      setError(null)
       await authService.logout()
       setUser(null)
       setIsKidMode(false)
     } catch (error) {
       console.error('Logout error:', error)
+      // Even if logout fails, clear local state
+      setUser(null)
+      setIsKidMode(false)
     }
   }
 
   const enterKidMode = async (pin) => {
     try {
+      setError(null)
       const response = await authService.switchToKidMode(pin)
-      // Refresh user data to get updated mode from backend
       await checkAuthStatus()
       return response
     } catch (error) {
+      setError(error.response?.data?.message || 'Failed to enter kid mode')
       throw error
     }
   }
 
   const exitKidMode = async (pin) => {
     try {
+      setError(null)
       const response = await authService.switchToParentMode(pin)
-      // Refresh user data to get updated mode from backend
       await checkAuthStatus()
       return response
     } catch (error) {
+      setError(error.response?.data?.message || 'Failed to exit kid mode')
       throw error
     }
   }
+
+  const clearError = () => setError(null)
 
   const value = {
     user,
@@ -103,7 +117,9 @@ export const AuthProvider = ({ children }) => {
     isKidMode,
     enterKidMode,
     exitKidMode,
-    loading
+    loading,
+    error,
+    clearError
   }
 
   return (
