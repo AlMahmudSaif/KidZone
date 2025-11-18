@@ -1,10 +1,10 @@
 //services/api.js
 import axios from 'axios'
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'https://kidzone-backend.onrender.com/api'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://kidzone-backend.onrender.com/api'
 
 const API = axios.create({
-  baseURL: BASE_URL,
+  baseURL: API_BASE_URL,
   withCredentials: false, // Using headers instead of cookies
 })
 
